@@ -1,0 +1,48 @@
+name: gestor_escolar_app
+description: App de gestión escolar para docentes
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_localizations:
+    sdk: flutter
+
+  firebase_core: ^4.0.0
+  firebase_auth: ^6.0.0
+  cloud_firestore: ^6.0.0
+
+  flutter_riverpod: ^2.5.1
+  go_router: ^13.2.0
+  excel: ^4.0.2
+  share_plus: ^7.2.2
+  path_provider: ^2.1.2
+  file_picker: ^11.0.2
+  intl: ^0.20.2
+  uuid: ^4.3.3
+  flutter_slidable: ^3.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/LogoMentorApp.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/LogoMentorApp.png"
+  

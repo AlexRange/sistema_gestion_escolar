@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+.cxx/
+
+# Local configuration
+/local.properties
+
+# Build / generated files
+/captures/
+/build/
+/app/build/
+
+# Generated Flutter files
+GeneratedPluginRegistrant.java
+
+# Signing / keystore files
+key.properties
+**/*.keystore
+**/*.jks

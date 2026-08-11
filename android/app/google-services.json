@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "323881496938",
+    "firebase_url": "https://gestor-escolar-app-default-rtdb.firebaseio.com",
+    "project_id": "gestor-escolar-app",
+    "storage_bucket": "gestor-escolar-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:323881496938:android:f4a63dd23cd92d6bf07513",
+        "android_client_info": {
+          "package_name": "com.alexrangel.gestor_escolar_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjw7UoGnrSGMzqs_XbNo8cgHxc7vecSKk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
