@@ -66,11 +66,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _exportAllGroups = false),
+                      onTap: () => setState(() => _exportAllGroups = false),
                       child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: !_exportAllGroups
                               ? AppColors.primary
@@ -84,8 +82,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                           boxShadow: !_exportAllGroups
                               ? [
                                   BoxShadow(
-                                      color: AppColors.primary
-                                          .withOpacity(0.2),
+                                      color: AppColors.primary.withOpacity(0.2),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2))
                                 ]
@@ -118,11 +115,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _exportAllGroups = true),
+                      onTap: () => setState(() => _exportAllGroups = true),
                       child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: _exportAllGroups
                               ? AppColors.accent
@@ -136,8 +131,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                           boxShadow: _exportAllGroups
                               ? [
                                   BoxShadow(
-                                      color: AppColors.accent
-                                          .withOpacity(0.2),
+                                      color: AppColors.accent.withOpacity(0.2),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2))
                                 ]
@@ -184,8 +178,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.accent.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.accent.withOpacity(0.3)),
+                    border:
+                        Border.all(color: AppColors.accent.withOpacity(0.3)),
                   ),
                   child: Row(
                     children: [
@@ -197,11 +191,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                           data: (groups) => Text(
                             'Se exportarán ${groups.length} grupos — '
                             'una hoja por grupo en el mismo archivo Excel.',
-                            style: const TextStyle(
-                                fontSize: 13, height: 1.4),
+                            style: const TextStyle(fontSize: 13, height: 1.4),
                           ),
-                          loading: () =>
-                              const Text('Cargando grupos...'),
+                          loading: () => const Text('Cargando grupos...'),
                           error: (e, _) => Text('Error: $e'),
                         ),
                       ),
@@ -256,8 +248,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.file_download,
-                color: Colors.white, size: 32),
+            child:
+                const Icon(Icons.file_download, color: Colors.white, size: 32),
           ),
           const SizedBox(width: 16),
           const Expanded(
@@ -270,10 +262,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold)),
                 SizedBox(height: 4),
-                Text(
-                    'Genera archivos Excel con asistencia y calificaciones',
-                    style:
-                        TextStyle(color: Colors.white70, fontSize: 13)),
+                Text('Genera archivos Excel con asistencia y calificaciones',
+                    style: TextStyle(color: Colors.white70, fontSize: 13)),
               ],
             ),
           ),
@@ -351,8 +341,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(g.name,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600)),
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
                       Text(g.subject,
                           style: const TextStyle(
                               fontSize: 12, color: Colors.grey)),
@@ -375,11 +364,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
         label: 'Asistencia',
         icon: Icons.check_circle_outline
       ),
-      (
-        value: 'grades',
-        label: 'Calificaciones',
-        icon: Icons.grade_outlined
-      ),
+      (value: 'grades', label: 'Calificaciones', icon: Icons.grade_outlined),
       (value: 'both', label: 'Ambos', icon: Icons.description_outlined),
     ];
 
@@ -396,8 +381,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                 color: selected ? AppColors.primary : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color:
-                      selected ? AppColors.primary : Colors.grey[300]!,
+                  color: selected ? AppColors.primary : Colors.grey[300]!,
                 ),
                 boxShadow: selected
                     ? [
@@ -419,9 +403,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: selected
-                              ? Colors.white
-                              : Colors.grey[600])),
+                          color: selected ? Colors.white : Colors.grey[600])),
                 ],
               ),
             ),
@@ -524,15 +506,14 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             : const Icon(Icons.download),
         label: Text(
           _isLoading ? 'Generando archivo...' : 'Generar y compartir Excel',
-          style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor:
               _exportAllGroups ? AppColors.accent : AppColors.primary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         onPressed: _isLoading ? null : _export,
       ),
@@ -552,13 +533,11 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline,
-                  color: AppColors.primary, size: 18),
+              Icon(Icons.info_outline, color: AppColors.primary, size: 18),
               SizedBox(width: 8),
               Text('¿Cómo funciona?',
                   style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary)),
+                      fontWeight: FontWeight.bold, color: AppColors.primary)),
             ],
           ),
           SizedBox(height: 8),
@@ -568,8 +547,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             '• La asistencia muestra P/F/R/J con colores\n'
             '• Las calificaciones incluyen promedio final por alumno\n'
             '• Se abre el menú para compartir por WhatsApp, Gmail o Drive',
-            style:
-                TextStyle(fontSize: 13, color: Colors.black87, height: 1.6),
+            style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.6),
           ),
         ],
       ),
@@ -650,8 +628,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
     for (final g in groups) {
       groupNames[g.id] = g.name;
-      studentsByGroup[g.id] =
-          await studentRepo.watchStudents(g.id).first;
+      studentsByGroup[g.id] = await studentRepo.watchStudents(g.id).first;
     }
 
     if (_exportType == 'attendance' || _exportType == 'both') {
@@ -682,8 +659,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               g.id, partial.startDate, partial.endDate);
           final activities =
               await actRepo.watchActivities(g.id, partial.name).first;
-          final actTitles =
-              activities.map((a) => a.title).toSet().toList();
+          final actTitles = activities.map((a) => a.title).toSet().toList();
           final evaluations =
               await evalRepo.watchEvaluations(g.id, partial.name).first;
 
@@ -697,8 +673,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
             final actCount = activities
                 .where((a) =>
-                    a.studentId == student.id &&
-                    (a.completed || a.reponed))
+                    a.studentId == student.id && (a.completed || a.reponed))
                 .length;
 
             final eval = evaluations.firstWhere(
@@ -719,6 +694,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               studentActivities: actCount,
               totalActivities: actTitles.length,
               evaluationPoints: eval.totalPoints,
+              components: [],
             );
 
             summaryData.add({
@@ -780,8 +756,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
         final activities = await actRepo
             .watchActivities(_selectedGroup!.id, partial.name)
             .first;
-        final actTitles =
-            activities.map((a) => a.title).toSet().toList();
+        final actTitles = activities.map((a) => a.title).toSet().toList();
         final evaluations = await evalRepo
             .watchEvaluations(_selectedGroup!.id, partial.name)
             .first;
@@ -796,8 +771,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
           final actCount = activities
               .where((a) =>
-                  a.studentId == student.id &&
-                  (a.completed || a.reponed))
+                  a.studentId == student.id && (a.completed || a.reponed))
               .length;
 
           final eval = evaluations.firstWhere(
@@ -818,6 +792,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             studentActivities: actCount,
             totalActivities: actTitles.length,
             evaluationPoints: eval.totalPoints,
+            components: [],
           );
 
           summaryData.add({

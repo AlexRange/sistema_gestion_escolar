@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/partial_model.dart';
+import '../../../data/models/grading_component_model.dart'; // ← IMPORT FALTANTE
 import '../../../data/models/activity_model.dart';
 import '../../../data/models/evaluation_model.dart';
 import '../../../data/models/student_model.dart';
@@ -13,7 +14,6 @@ import '../../providers/students_provider.dart';
 import '../../providers/groups_provider.dart';
 import '../../providers/attendance_provider.dart';
 import '../../../data/models/attendance_model.dart';
-//import '../../../data/repositories/attendance_repository.dart';\
 import '../../../core/utils/back_handler.dart';
 import '../../providers/attendance_override_provider.dart';
 
@@ -53,113 +53,113 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
           },
           orElse: () => 'Grupo',
         );
+
     return BackHandler(
-        backRoute: '/groups/${widget.groupId}',
-        child: Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            title: Text('Calificaciones — $groupName',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/groups/${widget.groupId}'),
+      backRoute: '/groups/${widget.groupId}',
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          title: Text('Calificaciones — $groupName',
+              style: const TextStyle(fontWeight: FontWeight.bold)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/groups/${widget.groupId}'),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add_chart),
+              tooltip: 'Nuevo parcial',
+              onPressed: () => _addPartialDialog(context),
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.add_chart),
-                tooltip: 'Nuevo parcial',
-                onPressed: () => _addPartialDialog(context),
-              ),
-            ],
-            bottom: _selectedPartial == null
-                ? null
-                : TabBar(
-                    controller: _tabController,
-                    indicatorColor: Colors.white,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white60,
-                    isScrollable: true, // ← importante en pantallas pequeñas
-                    tabs: const [
-                      Tab(
-                          icon: Icon(Icons.check_circle_outline, size: 18),
-                          text: 'Asistencia'),
-                      Tab(
-                          icon: Icon(Icons.assignment_outlined, size: 18),
-                          text: 'Actividades'),
-                      Tab(
-                          icon: Icon(Icons.star_outline, size: 18),
-                          text: 'Evaluación'),
-                      Tab(
-                          icon: Icon(Icons.bar_chart, size: 18),
-                          text: 'Resumen'),
-                    ],
-                  ),
-          ),
-          body: partialsAsync.when(
-            data: (partials) {
-              if (partials.isEmpty) return _emptyPartials();
+          ],
+          bottom: _selectedPartial == null
+              ? null
+              : TabBar(
+                  controller: _tabController,
+                  indicatorColor: Colors.white,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white60,
+                  isScrollable: true,
+                  tabs: const [
+                    Tab(
+                        icon: Icon(Icons.check_circle_outline, size: 18),
+                        text: 'Asistencia'),
+                    Tab(
+                        icon: Icon(Icons.assignment_outlined, size: 18),
+                        text: 'Actividades'),
+                    Tab(
+                        icon: Icon(Icons.star_outline, size: 18),
+                        text: 'Evaluación'),
+                    Tab(
+                        icon: Icon(Icons.bar_chart, size: 18),
+                        text: 'Resumen'),
+                  ],
+                ),
+        ),
+        body: partialsAsync.when(
+          data: (partials) {
+            if (partials.isEmpty) return _emptyPartials();
 
-              // Inicializar automáticamente al primer parcial
-              if (_selectedPartial == null && partials.isNotEmpty) {
-                // Usar addPostFrameCallback para evitar setState durante build
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted && _selectedPartial == null) {
-                    setState(() => _selectedPartial = partials.first);
-                  }
-                });
-                // Mostrar el primer parcial inmediatamente sin tabs
-                return _partialSelector(partials);
-              }
+            if (_selectedPartial == null && partials.isNotEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && _selectedPartial == null) {
+                  setState(() => _selectedPartial = partials.first);
+                }
+              });
+              return _partialSelector(partials);
+            }
 
-              return Column(
-                children: [
-                  _partialSelector(partials),
-                  Expanded(
-                    child: studentsAsync.when(
-                      data: (students) => TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _AttendanceSummaryTab(
-                            groupId: widget.groupId,
-                            partial: _selectedPartial!,
-                            students: students,
-                          ),
-                          _ActivitiesTab(
-                            groupId: widget.groupId,
-                            partial: _selectedPartial!,
-                            students: students,
-                          ),
-                          _EvaluationTab(
-                            groupId: widget.groupId,
-                            partial: _selectedPartial!,
-                            students: students,
-                          ),
-                          _SummaryTab(
-                            groupId: widget.groupId,
-                            partial: _selectedPartial!,
-                            students: students,
-                            attendanceOverrides: ref.watch(attendanceOverrideProvider),
-                          ),
-                        ],
-                      ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Center(child: Text('Error: $e')),
+            return Column(
+              children: [
+                _partialSelector(partials),
+                Expanded(
+                  child: studentsAsync.when(
+                    data: (students) => TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _AttendanceSummaryTab(
+                          groupId: widget.groupId,
+                          partial: _selectedPartial!,
+                          students: students,
+                        ),
+                        _ActivitiesTab(
+                          groupId: widget.groupId,
+                          partial: _selectedPartial!,
+                          students: students,
+                        ),
+                        _EvaluationTab(
+                          groupId: widget.groupId,
+                          partial: _selectedPartial!,
+                          students: students,
+                        ),
+                        _SummaryTab(
+                          groupId: widget.groupId,
+                          partial: _selectedPartial!,
+                          students: students,
+                          attendanceOverrides:
+                              ref.watch(attendanceOverrideProvider),
+                        ),
+                      ],
                     ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(child: Text('Error: $e')),
                   ),
-                ],
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e')),
-          ),
-        ));
+                ),
+              ],
+            );
+          },
+          loading: () =>
+              const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e')),
+        ),
+      ),
+    );
   }
 
   Widget _partialSelector(List<PartialModel> partials) {
-    // Sincronizar _selectedPartial con la lista actualizada por ID
     if (_selectedPartial != null) {
       final updated = partials.where((p) => p.id == _selectedPartial!.id);
       if (updated.isNotEmpty) {
@@ -181,19 +181,19 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                // ← usa String (id) no PartialModel
                 value: _selectedPartial?.id,
                 isExpanded: true,
                 items: partials
                     .map((p) => DropdownMenuItem(
                           value: p.id,
                           child: Text(p.name,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w600)),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600)),
                         ))
                     .toList(),
                 onChanged: (id) => setState(() {
-                  _selectedPartial = partials.firstWhere((p) => p.id == id);
+                  _selectedPartial =
+                      partials.firstWhere((p) => p.id == id);
                   _tabController.animateTo(0);
                 }),
               ),
@@ -204,7 +204,6 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
                 color: AppColors.secondary, size: 20),
             onPressed: () => _editPartialDialog(_selectedPartial!),
           ),
-          // Después del IconButton de editar, agrega:
           IconButton(
             icon: const Icon(Icons.delete_outline,
                 color: AppColors.error, size: 20),
@@ -259,8 +258,8 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
           title: const Text('Nuevo parcial',
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: AppColors.primary)),
@@ -296,7 +295,6 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
                         v == null || v.isEmpty ? 'Campo requerido' : null,
                   ),
                   const SizedBox(height: 12),
-                  // Fechas
                   _dateRow(
                     label: 'Inicio',
                     date: startDate,
@@ -308,9 +306,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
                         lastDate: DateTime(2030),
                         locale: const Locale('es', 'MX'),
                       );
-                      if (p != null) {
-                        setDialogState(() => startDate = p);
-                      }
+                      if (p != null) setDialogState(() => startDate = p);
                     },
                   ),
                   const SizedBox(height: 8),
@@ -325,9 +321,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
                         lastDate: DateTime(2030),
                         locale: const Locale('es', 'MX'),
                       );
-                      if (p != null) {
-                        setDialogState(() => endDate = p);
-                      }
+                      if (p != null) setDialogState(() => endDate = p);
                     },
                   ),
                 ],
@@ -336,7 +330,8 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: () =>
+                  Navigator.of(ctx, rootNavigator: true).pop(),
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
@@ -354,14 +349,16 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
                         id: '',
                         groupId: widget.groupId,
                         name: nameCtrl.text.trim(),
-                        totalClassDays: int.tryParse(daysCtrl.text.trim()) ?? 0,
+                        totalClassDays:
+                            int.tryParse(daysCtrl.text.trim()) ?? 0,
                         totalActivities:
                             int.tryParse(activitiesCtrl.text.trim()) ?? 0,
                         startDate: startDate,
                         endDate: endDate,
                       ),
                     );
-                if (ctx.mounted) Navigator.of(ctx, rootNavigator: true).pop();
+                if (ctx.mounted)
+                  Navigator.of(ctx, rootNavigator: true).pop();
               },
               child: const Text('Crear'),
             ),
@@ -377,7 +374,8 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
     final activitiesCtrl =
         TextEditingController(text: partial.totalActivities.toString());
 
-    // Copiar criterios existentes o poner defaults
+    List<GradingComponent> components = List.from(partial.activeComponents);
+
     List<Map<String, dynamic>> criteria = partial.evaluationCriteria.isEmpty
         ? [
             {'name': 'Criterio 1'},
@@ -388,139 +386,358 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
             .map((c) => {'name': c['name'] ?? ''})
             .toList();
 
+    final weightControllers = {
+      for (final c in components)
+        c.id: TextEditingController(
+            text: (c.weight * 100).toStringAsFixed(0))
+    };
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text('Editar ${partial.name}',
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: AppColors.primary)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: daysCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration:
-                      _inputDeco('Total días de clase', Icons.calendar_today),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: activitiesCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: _inputDeco(
-                      'Total actividades', Icons.assignment_outlined),
-                ),
-                const SizedBox(height: 16),
-                // Criterios de evaluación
-                const Text('Criterios de evaluación (30 pts total)',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                        fontSize: 13)),
-                const SizedBox(height: 4),
-                const Text(
-                  'Define los criterios una vez. Al calificar solo ingresarás los puntos por alumno.',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-                const SizedBox(height: 8),
-                ...criteria.asMap().entries.map((entry) {
-                  final i = entry.key;
-                  final c = entry.value;
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              labelText: 'Criterio',
-                              isDense: true,
-                              border: OutlineInputBorder(),
-                            ),
-                            controller: TextEditingController(text: c['name'])
-                              ..selection = TextSelection.collapsed(
-                                  offset: (c['name'] as String).length),
-                            onChanged: (v) =>
-                                setS(() => criteria[i]['name'] = v),
+        builder: (ctx, setS) {
+          double totalWeight = 0;
+          for (final c in components) {
+            final ctrl = weightControllers[c.id];
+            final val = double.tryParse(ctrl?.text ?? '0') ?? 0;
+            totalWeight += val;
+          }
+          final weightsOk = (totalWeight - 100).abs() < 1;
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            title: Text('Editar ${partial.name}',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: AppColors.primary)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Días y actividades ──────────────────────
+                  TextFormField(
+                    controller: daysCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: _inputDeco(
+                        'Total días de clase', Icons.calendar_today),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: activitiesCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: _inputDeco(
+                        'Total actividades', Icons.assignment_outlined),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Ponderaciones ───────────────────────────
+                  Row(
+                    children: [
+                      const Text('Criterios de evaluación',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontSize: 14)),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: weightsOk
+                              ? AppColors.gradeHigh.withOpacity(0.15)
+                              : AppColors.error.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: weightsOk
+                                ? AppColors.gradeHigh
+                                : AppColors.error,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              color: AppColors.error, size: 18),
-                          onPressed: () => setS(() => criteria.removeAt(i)),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-                // Total
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton.icon(
-                        icon: const Icon(Icons.add, size: 16),
-                        label: const Text('Agregar criterio',
-                            style: TextStyle(fontSize: 12)),
-                        onPressed: () => setS(() => criteria.add(
-                              {'name': 'Criterio ${criteria.length + 1}'},
-                            )),
-                      ),
-                      Text(
-                        '${criteria.length} criterios = 30 pts',
-                        style: const TextStyle(
+                        child: Text(
+                          'Total: ${totalWeight.toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary),
+                            color: weightsOk
+                                ? AppColors.gradeHigh
+                                : AppColors.error,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              onPressed: () async {
-                await ref.read(partialRepositoryProvider)!.updatePartial(
-                      widget.groupId,
-                      partial.copyWith(
-                        totalClassDays: int.tryParse(daysCtrl.text.trim()) ??
-                            partial.totalClassDays,
-                        totalActivities:
-                            int.tryParse(activitiesCtrl.text.trim()) ??
-                                partial.totalActivities,
-                        evaluationCriteria: criteria,
+                  const SizedBox(height: 4),
+                  Text('La suma debe ser exactamente 100%',
+                      style: TextStyle(
+                          fontSize: 11, color: Colors.grey[500])),
+                  const SizedBox(height: 12),
+
+                  // Lista de componentes
+                  ...components.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final comp = entry.value;
+                    final wCtrl = weightControllers[comp.id] ??
+                        TextEditingController(text: '0');
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: _componentColor(comp.type)
+                                      .withOpacity(0.12),
+                                  borderRadius:
+                                      BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  _componentIcon(comp.type),
+                                  color: _componentColor(comp.type),
+                                  size: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextField(
+                                  decoration: const InputDecoration(
+                                    labelText: 'Nombre',
+                                    isDense: true,
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  controller: TextEditingController(
+                                      text: comp.name)
+                                    ..selection =
+                                        TextSelection.collapsed(
+                                            offset: comp.name.length),
+                                  onChanged: (v) => setS(() {
+                                    components[i] =
+                                        comp.copyWith(name: v);
+                                  }),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 64,
+                                child: TextField(
+                                  controller: wCtrl,
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.center,
+                                  decoration: const InputDecoration(
+                                    labelText: '%',
+                                    isDense: true,
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (_) => setS(() {}),
+                                ),
+                              ),
+                              if (components.length > 1)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline,
+                                      color: AppColors.error, size: 18),
+                                  onPressed: () => setS(() {
+                                    weightControllers.remove(comp.id);
+                                    components.removeAt(i);
+                                  }),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Text('Tipo:',
+                                  style: TextStyle(
+                                      fontSize: 11, color: Colors.grey)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 6,
+                                  children: [
+                                    ('attendance', 'Asistencia'),
+                                    ('activities', 'Actividades'),
+                                    ('evaluation', 'Examen'),
+                                    ('custom', 'Manual'),
+                                  ].map((t) {
+                                    final isSelected = comp.type == t.$1;
+                                    return GestureDetector(
+                                      onTap: () => setS(() {
+                                        components[i] =
+                                            comp.copyWith(type: t.$1);
+                                      }),
+                                      child: Container(
+                                        padding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? _componentColor(t.$1)
+                                              : Colors.grey[200],
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          t.$2,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : Colors.grey[600],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     );
-                if (ctx.mounted) Navigator.of(ctx, rootNavigator: true).pop();
-              },
-              child: const Text('Guardar'),
+                  }),
+
+                  TextButton.icon(
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Agregar componente',
+                        style: TextStyle(fontSize: 12)),
+                    onPressed: () => setS(() {
+                      final newId =
+                          'custom_${DateTime.now().millisecondsSinceEpoch}';
+                      components.add(GradingComponent(
+                        id: newId,
+                        name: 'Nuevo componente',
+                        weight: 0.0,
+                        type: 'custom',
+                      ));
+                      weightControllers[newId] =
+                          TextEditingController(text: '0');
+                    }),
+                  ),
+
+                  const Divider(),
+                  const SizedBox(height: 8),
+
+                  // ── Criterios del examen ────────────────────
+                  const Text('Criterios del examen/proyecto',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                          fontSize: 14)),
+                  const SizedBox(height: 8),
+                  ...criteria.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final c = entry.value;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              decoration: const InputDecoration(
+                                labelText: 'Criterio',
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                              ),
+                              controller:
+                                  TextEditingController(text: c['name'])
+                                    ..selection = TextSelection.collapsed(
+                                        offset:
+                                            (c['name'] as String).length),
+                              onChanged: (v) =>
+                                  setS(() => criteria[i]['name'] = v),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: AppColors.error, size: 18),
+                            onPressed: () =>
+                                setS(() => criteria.removeAt(i)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  TextButton.icon(
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Agregar criterio',
+                        style: TextStyle(fontSize: 12)),
+                    onPressed: () => setS(() => criteria.add(
+                          {'name': 'Criterio ${criteria.length + 1}'},
+                        )),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(ctx, rootNavigator: true).pop(),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      weightsOk ? AppColors.primary : Colors.grey,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: weightsOk
+                    ? () async {
+                        final updatedComponents = components.map((c) {
+                          final ctrl = weightControllers[c.id];
+                          final pct =
+                              double.tryParse(ctrl?.text ?? '0') ?? 0;
+                          return GradingComponent(
+                            id: c.id,
+                            name: c.name,
+                            weight: pct / 100,
+                            type: c.type,
+                          );
+                        }).toList();
+
+                        await ref
+                            .read(partialRepositoryProvider)!
+                            .updatePartial(
+                              widget.groupId,
+                              partial.copyWith(
+                                totalClassDays: int.tryParse(
+                                        daysCtrl.text.trim()) ??
+                                    partial.totalClassDays,
+                                totalActivities: int.tryParse(
+                                        activitiesCtrl.text.trim()) ??
+                                    partial.totalActivities,
+                                evaluationCriteria: criteria,
+                                gradingComponents: updatedComponents,
+                              ),
+                            );
+                        if (ctx.mounted)
+                          Navigator.of(ctx, rootNavigator: true).pop();
+                      }
+                    : null,
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -529,15 +746,17 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
         title: const Text('Eliminar parcial',
-            style:
-                TextStyle(fontWeight: FontWeight.bold, color: AppColors.error)),
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: AppColors.error)),
         content: Text(
             '¿Eliminar "${partial.name}"?\nSe borrarán todas las actividades, evaluaciones y calificaciones de este parcial.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
+            onPressed: () =>
+                Navigator.of(ctx, rootNavigator: true).pop(),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
@@ -557,6 +776,27 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
         ],
       ),
     );
+  }
+
+  // ── Helpers compartidos ──────────────────────────────────────────────
+  Color _componentColor(String type) {
+    switch (type) {
+      case 'attendance': return AppColors.present;
+      case 'activities': return AppColors.secondary;
+      case 'evaluation': return AppColors.warning;
+      case 'custom':     return Colors.purple;
+      default:           return Colors.grey;
+    }
+  }
+
+  IconData _componentIcon(String type) {
+    switch (type) {
+      case 'attendance': return Icons.check_circle_outline;
+      case 'activities': return Icons.assignment_outlined;
+      case 'evaluation': return Icons.star_outline;
+      case 'custom':     return Icons.edit_note;
+      default:           return Icons.circle_outlined;
+    }
   }
 
   Widget _dateRow({
@@ -592,7 +832,8 @@ class _GradesScreenState extends ConsumerState<GradesScreen>
   InputDecoration _inputDeco(String label, IconData icon) => InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: AppColors.primary),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
@@ -620,8 +861,9 @@ class _AttendanceSummaryTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final attRepo = ref.watch(attendanceRepositoryProvider);
-    if (attRepo == null)
+    if (attRepo == null) {
       return const Center(child: CircularProgressIndicator());
+    }
     final overrides = ref.watch(attendanceOverrideProvider);
     final fmt = DateFormat('d MMM yyyy', 'es_MX');
 
@@ -645,7 +887,8 @@ class _AttendanceSummaryTab extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: AppColors.warning.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                  border: Border.all(
+                      color: AppColors.warning.withOpacity(0.3)),
                 ),
                 child: const Row(
                   children: [
@@ -671,23 +914,18 @@ class _AttendanceSummaryTab extends ConsumerWidget {
                     .length;
 
                 final key = _overrideKey(s.id);
-                final displayed =
-                    overrides.containsKey(key) ? overrides[key]! : counted;
-                final safe = displayed.clamp(0, partial.totalClassDays);
+                final displayed = overrides.containsKey(key)
+                    ? overrides[key]!
+                    : counted;
+                final safe =
+                    displayed.clamp(0, partial.totalClassDays);
                 final score = partial.totalClassDays == 0
                     ? 0.0
                     : (safe / partial.totalClassDays) * 10;
 
                 return _studentAttRow(
-                  context,
-                  ref,
-                  s,
-                  displayed,
-                  safe,
-                  score,
-                  partial.totalClassDays,
-                  key,
-                  overrides.containsKey(key),
+                  context, ref, s, displayed, safe, score,
+                  partial.totalClassDays, key, overrides.containsKey(key),
                 );
               }),
             ],
@@ -714,14 +952,16 @@ class _AttendanceSummaryTab extends ConsumerWidget {
           Text(
             '${fmt.format(partial.startDate)}  →  ${fmt.format(partial.endDate)}',
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14),
           ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _chip('Días configurados', '${partial.totalClassDays}'),
-              _chip('Vale', '10 pts'),
+              _chip('Vale', '${partial.activeComponents.firstWhere((c) => c.type == "attendance", orElse: () => GradingComponent(id: "", name: "", weight: 0.1, type: "attendance")).maxPoints.toStringAsFixed(0)} pts'),
             ],
           ),
         ],
@@ -744,15 +984,9 @@ class _AttendanceSummaryTab extends ConsumerWidget {
   }
 
   Widget _studentAttRow(
-    BuildContext context,
-    WidgetRef ref,
-    StudentModel s,
-    int displayed,
-    int safe,
-    double score,
-    int total,
-    String overrideKey,
-    bool isOverridden,
+    BuildContext context, WidgetRef ref, StudentModel s,
+    int displayed, int safe, double score, int total,
+    String overrideKey, bool isOverridden,
   ) {
     final isAboveLimit = displayed > total;
 
@@ -793,23 +1027,26 @@ class _AttendanceSummaryTab extends ConsumerWidget {
                         fontWeight: FontWeight.w500, fontSize: 14)),
                 if (isAboveLimit)
                   const Text('⚠️ Supera días configurados',
-                      style: TextStyle(fontSize: 10, color: AppColors.warning)),
+                      style: TextStyle(
+                          fontSize: 10, color: AppColors.warning)),
                 if (isOverridden)
                   const Text('✏️ Editado manualmente',
-                      style:
-                          TextStyle(fontSize: 10, color: AppColors.secondary)),
+                      style: TextStyle(
+                          fontSize: 10, color: AppColors.secondary)),
               ],
             ),
           ),
           GestureDetector(
-            onTap: () =>
-                _editAttDialog(context, ref, s, displayed, overrideKey),
+            onTap: () => _editAttDialog(
+                context, ref, s, displayed, overrideKey),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppColors.primary.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
@@ -819,14 +1056,16 @@ class _AttendanceSummaryTab extends ConsumerWidget {
                           fontWeight: FontWeight.bold,
                           fontSize: 14)),
                   const SizedBox(width: 4),
-                  const Icon(Icons.edit, size: 12, color: AppColors.primary),
+                  const Icon(Icons.edit,
+                      size: 12, color: AppColors.primary),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 10),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: _scoreColor(score).withOpacity(0.15),
               borderRadius: BorderRadius.circular(8),
@@ -844,13 +1083,14 @@ class _AttendanceSummaryTab extends ConsumerWidget {
     );
   }
 
-  void _editAttDialog(BuildContext context, WidgetRef ref, StudentModel student,
-      int current, String overrideKey) {
+  void _editAttDialog(BuildContext context, WidgetRef ref,
+      StudentModel student, int current, String overrideKey) {
     final ctrl = TextEditingController(text: current.toString());
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
         title: const Text('Editar asistencias',
             style: TextStyle(
                 fontWeight: FontWeight.bold, color: AppColors.primary)),
@@ -862,7 +1102,8 @@ class _AttendanceSummaryTab extends ConsumerWidget {
                 style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             Text('Días configurados: ${partial.totalClassDays}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                style:
+                    const TextStyle(fontSize: 12, color: Colors.grey)),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
@@ -871,13 +1112,8 @@ class _AttendanceSummaryTab extends ConsumerWidget {
               decoration: InputDecoration(
                 labelText: 'Días asistidos',
                 helperText: 'Máximo: ${partial.totalClassDays}',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 2),
-                ),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -890,18 +1126,18 @@ class _AttendanceSummaryTab extends ConsumerWidget {
                   .removeOverride(overrideKey);
               Navigator.of(ctx, rootNavigator: true).pop();
             },
-            child: const Text('Resetear', style: TextStyle(color: Colors.grey)),
+            child: const Text('Resetear',
+                style: TextStyle(color: Colors.grey)),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
+            onPressed: () =>
+                Navigator.of(ctx, rootNavigator: true).pop(),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
               final val = int.tryParse(ctrl.text.trim());
@@ -947,25 +1183,31 @@ class _ActivitiesTab extends ConsumerWidget {
 
     return activitiesAsync.when(
       data: (activities) {
-        // Obtener títulos únicos de actividades
-        final titles = activities.map((a) => a.title).toSet().toList()..sort();
+        final titles =
+            activities.map((a) => a.title).toSet().toList()..sort();
+
+        // Obtener el peso de actividades del componente configurado
+        final actComponent = partial.activeComponents.firstWhere(
+          (c) => c.type == 'activities',
+          orElse: () => GradingComponent(
+              id: 'activities', name: 'Actividades', weight: 0.6, type: 'activities'),
+        );
 
         return Column(
           children: [
-            // Info + botón agregar actividad
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      '${titles.length}/${partial.totalActivities} actividades • Vale 60 pts',
+                      '${titles.length}/${partial.totalActivities} actividades • Vale ${actComponent.maxPoints.toStringAsFixed(0)} pts',
                       style: const TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
@@ -975,7 +1217,8 @@ class _ActivitiesTab extends ConsumerWidget {
                   const Spacer(),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Nueva', style: TextStyle(fontSize: 13)),
+                    label: const Text('Nueva',
+                        style: TextStyle(fontSize: 13)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -990,7 +1233,6 @@ class _ActivitiesTab extends ConsumerWidget {
                 ],
               ),
             ),
-            // Tabla horizontal: alumnos × actividades
             Expanded(
               child: titles.isEmpty
                   ? Center(
@@ -1009,33 +1251,32 @@ class _ActivitiesTab extends ConsumerWidget {
                       scrollDirection: Axis.vertical,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                        padding:
+                            const EdgeInsets.fromLTRB(12, 0, 12, 16),
                         child: _activitiesTable(
-                            context, ref, students, titles, activities),
+                            context, ref, students, titles, activities,
+                            actComponent.maxPoints),
                       ),
                     ),
             ),
           ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () =>
+          const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
     );
   }
 
   Widget _activitiesTable(
-    BuildContext context,
-    WidgetRef ref,
-    List<StudentModel> students,
-    List<String> titles,
-    List<ActivityModel> activities,
+    BuildContext context, WidgetRef ref,
+    List<StudentModel> students, List<String> titles,
+    List<ActivityModel> activities, double maxPoints,
   ) {
     const numW = 40.0;
     const nameW = 150.0;
     const cellW = 80.0;
     const scoreW = 70.0;
-
-    // Total real = actividades registradas (no el número configurado)
     final totalReal = titles.length;
 
     return DataTable(
@@ -1047,7 +1288,7 @@ class _ActivitiesTab extends ConsumerWidget {
         const DataColumn(
             label: SizedBox(
                 width: numW,
-                child: const Center(
+                child: Center(
                     child: Text('No.',
                         style: TextStyle(
                             color: Colors.white,
@@ -1056,7 +1297,7 @@ class _ActivitiesTab extends ConsumerWidget {
         const DataColumn(
             label: SizedBox(
                 width: nameW,
-                child: const Padding(
+                child: Padding(
                     padding: EdgeInsets.only(left: 8),
                     child: Text('Alumno',
                         style: TextStyle(
@@ -1064,91 +1305,85 @@ class _ActivitiesTab extends ConsumerWidget {
                             fontWeight: FontWeight.bold,
                             fontSize: 12))))),
         ...titles.map((t) => DataColumn(
-  label: SizedBox(
-    width: cellW,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Flexible(
-          child: Tooltip(
-            message: t,
-            child: Text(
-              t.length > 6 ? '${t.substring(0, 6)}…' : t,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11),
-            ),
-          ),
-        ),
-        // Menú de opciones por actividad
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert,
-              color: Colors.white54, size: 14),
-          padding: EdgeInsets.zero,
-          itemBuilder: (ctx) => [
-            const PopupMenuItem(
-              value: 'all_done',
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle,
-                      color: AppColors.present, size: 18),
-                  SizedBox(width: 8),
-                  Text('Marcar todos ✓',
-                      style: TextStyle(fontSize: 13)),
-                ],
+              label: SizedBox(
+                width: cellW,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Tooltip(
+                        message: t,
+                        child: Text(
+                          t.length > 6 ? '${t.substring(0, 6)}…' : t,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11),
+                        ),
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert,
+                          color: Colors.white54, size: 14),
+                      padding: EdgeInsets.zero,
+                      itemBuilder: (ctx) => [
+                        const PopupMenuItem(
+                          value: 'all_done',
+                          child: Row(children: [
+                            Icon(Icons.check_circle,
+                                color: AppColors.present, size: 18),
+                            SizedBox(width: 8),
+                            Text('Marcar todos ✓',
+                                style: TextStyle(fontSize: 13)),
+                          ]),
+                        ),
+                        const PopupMenuItem(
+                          value: 'all_undone',
+                          child: Row(children: [
+                            Icon(Icons.cancel_outlined,
+                                color: AppColors.absent, size: 18),
+                            SizedBox(width: 8),
+                            Text('Desmarcar todos',
+                                style: TextStyle(fontSize: 13)),
+                          ]),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(children: [
+                            Icon(Icons.delete_outline,
+                                color: AppColors.error, size: 18),
+                            SizedBox(width: 8),
+                            Text('Eliminar actividad',
+                                style: TextStyle(
+                                    fontSize: 13, color: AppColors.error)),
+                          ]),
+                        ),
+                      ],
+                      onSelected: (action) async {
+                        if (action == 'delete') {
+                          _confirmDeleteActivity(
+                              context, ref, t, activities);
+                        } else if (action == 'all_done') {
+                          await ref
+                              .read(activityRepositoryProvider)!
+                              .markAllCompleted(groupId, t, true);
+                        } else if (action == 'all_undone') {
+                          await ref
+                              .read(activityRepositoryProvider)!
+                              .markAllCompleted(groupId, t, false);
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const PopupMenuItem(
-              value: 'all_undone',
-              child: Row(
-                children: [
-                  Icon(Icons.cancel_outlined,
-                      color: AppColors.absent, size: 18),
-                  SizedBox(width: 8),
-                  Text('Desmarcar todos',
-                      style: TextStyle(fontSize: 13)),
-                ],
-              ),
-            ),
-            const PopupMenuDivider(),
-            const PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete_outline,
-                      color: AppColors.error, size: 18),
-                  SizedBox(width: 8),
-                  Text('Eliminar actividad',
-                      style: TextStyle(
-                          fontSize: 13, color: AppColors.error)),
-                ],
-              ),
-            ),
-          ],
-          onSelected: (action) async {
-            if (action == 'delete') {
-              _confirmDeleteActivity(context, ref, t, activities);
-            } else if (action == 'all_done') {
-              await ref
-                  .read(activityRepositoryProvider)!
-                  .markAllCompleted(groupId, t, true);
-            } else if (action == 'all_undone') {
-              await ref
-                  .read(activityRepositoryProvider)!
-                  .markAllCompleted(groupId, t, false);
-            }
-          },
-        ),
-      ],
-    ),
-  ),
-)),
-        DataColumn(
+            )),
+        const DataColumn(
             label: SizedBox(
                 width: scoreW,
-                child: const Center(
+                child: Center(
                     child: Text('Pts',
                         style: TextStyle(
                             color: Colors.white,
@@ -1172,36 +1407,38 @@ class _ActivitiesTab extends ConsumerWidget {
           final done = act.completed || act.reponed;
           if (done) completedCount++;
 
-          return DataCell(
-            Container(
-              width: cellW,
-              alignment: Alignment.center,
-              color: done
-                  ? AppColors.present.withOpacity(0.1)
-                  : AppColors.absent.withOpacity(0.05),
-              child: act.id == '__none__'
-                  ? Icon(Icons.remove, color: Colors.grey[400], size: 16)
-                  : GestureDetector(
-                      onTap: () async {
-                        await ref
-                            .read(activityRepositoryProvider)!
-                            .updateActivity(
-                              groupId,
-                              act.copyWith(completed: !act.completed),
-                            );
-                      },
-                      child: Icon(
-                        done ? Icons.check_circle : Icons.cancel_outlined,
-                        color: done ? AppColors.present : AppColors.absent,
-                        size: 22,
-                      ),
+          return DataCell(Container(
+            width: cellW,
+            alignment: Alignment.center,
+            color: done
+                ? AppColors.present.withOpacity(0.1)
+                : AppColors.absent.withOpacity(0.05),
+            child: act.id == '__none__'
+                ? Icon(Icons.remove, color: Colors.grey[400], size: 16)
+                : GestureDetector(
+                    onTap: () async {
+                      await ref
+                          .read(activityRepositoryProvider)!
+                          .updateActivity(
+                            groupId,
+                            act.copyWith(completed: !act.completed),
+                          );
+                    },
+                    child: Icon(
+                      done
+                          ? Icons.check_circle
+                          : Icons.cancel_outlined,
+                      color: done ? AppColors.present : AppColors.absent,
+                      size: 22,
                     ),
-            ),
-          );
+                  ),
+          ));
         }).toList();
 
-        // Regla de 3 sobre actividades registradas reales
-        final score = totalReal == 0 ? 0.0 : (completedCount / totalReal) * 60;
+        // Usar maxPoints configurado
+        final score = totalReal == 0
+            ? 0.0
+            : (completedCount / totalReal) * maxPoints;
 
         return DataRow(cells: [
           DataCell(SizedBox(
@@ -1219,7 +1456,8 @@ class _ActivitiesTab extends ConsumerWidget {
                   child: Text(student.fullName,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w500))))),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500))))),
           ...cells,
           DataCell(Container(
             width: scoreW,
@@ -1229,9 +1467,9 @@ class _ActivitiesTab extends ConsumerWidget {
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
-                  color: score >= 36
+                  color: score >= maxPoints * 0.6
                       ? AppColors.gradeHigh
-                      : score >= 24
+                      : score >= maxPoints * 0.4
                           ? AppColors.gradeMid
                           : AppColors.gradeLow),
             ),
@@ -1241,8 +1479,8 @@ class _ActivitiesTab extends ConsumerWidget {
     );
   }
 
-  void _addActivityDialog(
-      BuildContext context, WidgetRef ref, List<ActivityModel> existing) {
+  void _addActivityDialog(BuildContext context, WidgetRef ref,
+      List<ActivityModel> existing) {
     final titleCtrl = TextEditingController();
     DateTime date = DateTime.now();
 
@@ -1250,8 +1488,8 @@ class _ActivitiesTab extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
           title: const Text('Nueva actividad',
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: AppColors.primary)),
@@ -1263,7 +1501,8 @@ class _ActivitiesTab extends ConsumerWidget {
                 decoration: const InputDecoration(
                   labelText: 'Nombre de la actividad',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.assignment, color: AppColors.primary),
+                  prefixIcon:
+                      Icon(Icons.assignment, color: AppColors.primary),
                 ),
               ),
               const SizedBox(height: 12),
@@ -1289,7 +1528,8 @@ class _ActivitiesTab extends ConsumerWidget {
                       const Icon(Icons.calendar_today,
                           color: AppColors.primary, size: 18),
                       const SizedBox(width: 8),
-                      Text(DateFormat('d MMM yyyy', 'es_MX').format(date),
+                      Text(
+                          DateFormat('d MMM yyyy', 'es_MX').format(date),
                           style: const TextStyle(fontSize: 14)),
                     ],
                   ),
@@ -1297,14 +1537,15 @@ class _ActivitiesTab extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Se registrará para todos los alumnos del grupo. Después puedes marcar quién la realizó.',
+                'Se registrará para todos los alumnos del grupo.',
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: () =>
+                  Navigator.of(ctx, rootNavigator: true).pop(),
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
@@ -1326,7 +1567,8 @@ class _ActivitiesTab extends ConsumerWidget {
                       title: title,
                       date: date,
                     );
-                if (ctx.mounted) Navigator.of(ctx, rootNavigator: true).pop();
+                if (ctx.mounted)
+                  Navigator.of(ctx, rootNavigator: true).pop();
               },
               child: const Text('Registrar'),
             ),
@@ -1336,20 +1578,22 @@ class _ActivitiesTab extends ConsumerWidget {
     );
   }
 
-  void _confirmDeleteActivity(BuildContext context, WidgetRef ref, String title,
-      List<ActivityModel> activities) {
+  void _confirmDeleteActivity(BuildContext context, WidgetRef ref,
+      String title, List<ActivityModel> activities) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
         title: const Text('Eliminar actividad',
-            style:
-                TextStyle(fontWeight: FontWeight.bold, color: AppColors.error)),
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: AppColors.error)),
         content: Text(
             '¿Eliminar "$title" para todos los alumnos?\nEsta acción no se puede deshacer.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () =>
+                Navigator.of(ctx, rootNavigator: true).pop(),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
@@ -1358,8 +1602,7 @@ class _ActivitiesTab extends ConsumerWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () async {
-              Navigator.pop(ctx);
-              // Eliminar todos los registros de esa actividad
+              Navigator.of(ctx, rootNavigator: true).pop();
               final toDelete =
                   activities.where((a) => a.title == title).toList();
               for (final act in toDelete) {
@@ -1390,10 +1633,38 @@ class _EvaluationTab extends ConsumerWidget {
     required this.students,
   });
 
+  // Helpers de color e ícono para componentes
+  Color _componentColor(String type) {
+    switch (type) {
+      case 'attendance': return AppColors.present;
+      case 'activities': return AppColors.secondary;
+      case 'evaluation': return AppColors.warning;
+      case 'custom':     return Colors.purple;
+      default:           return Colors.grey;
+    }
+  }
+
+  IconData _componentIcon(String type) {
+    switch (type) {
+      case 'attendance': return Icons.check_circle_outline;
+      case 'activities': return Icons.assignment_outlined;
+      case 'evaluation': return Icons.star_outline;
+      case 'custom':     return Icons.edit_note;
+      default:           return Icons.circle_outlined;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final evalsAsync = ref.watch(
         evaluationsProvider((groupId: groupId, partialName: partial.name)));
+
+    // Obtener componente de evaluación para mostrar pts correctos
+    final evalComponent = partial.activeComponents.firstWhere(
+      (c) => c.type == 'evaluation',
+      orElse: () => GradingComponent(
+          id: 'evaluation', name: 'Examen', weight: 0.3, type: 'evaluation'),
+    );
 
     return evalsAsync.when(
       data: (evals) => ListView(
@@ -1405,16 +1676,19 @@ class _EvaluationTab extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.warning.withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+              border:
+                  Border.all(color: AppColors.warning.withOpacity(0.3)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline, color: AppColors.warning, size: 18),
-                SizedBox(width: 8),
+                const Icon(Icons.info_outline,
+                    color: AppColors.warning, size: 18),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'La evaluación vale 30 puntos. Toca a un alumno para registrar sus criterios.',
-                    style: TextStyle(fontSize: 12, color: Colors.black87),
+                    'La evaluación vale ${evalComponent.maxPoints.toStringAsFixed(0)} puntos. Toca a un alumno para registrar sus criterios.',
+                    style: const TextStyle(
+                        fontSize: 12, color: Colors.black87),
                   ),
                 ),
               ],
@@ -1432,6 +1706,11 @@ class _EvaluationTab extends ConsumerWidget {
                 recordedAt: DateTime.now(),
               ),
             );
+
+            // Calcular pts considerando el peso del componente
+            final normalizedPts = evalComponent.maxPoints == 0
+                ? 0.0
+                : (eval.totalPoints / 30) * evalComponent.maxPoints;
 
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -1459,18 +1738,21 @@ class _EvaluationTab extends ConsumerWidget {
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 14)),
                 trailing: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _scoreColor(eval.totalPoints).withOpacity(0.15),
+                    color: _scoreColor(normalizedPts,
+                            evalComponent.maxPoints)
+                        .withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     eval.criteria.isEmpty
                         ? 'Sin eval.'
-                        : '${eval.totalPoints.toStringAsFixed(1)}/30',
+                        : '${normalizedPts.toStringAsFixed(1)}/${evalComponent.maxPoints.toStringAsFixed(0)}',
                     style: TextStyle(
-                        color: _scoreColor(eval.totalPoints),
+                        color: _scoreColor(
+                            normalizedPts, evalComponent.maxPoints),
                         fontWeight: FontWeight.bold,
                         fontSize: 12),
                   ),
@@ -1481,19 +1763,22 @@ class _EvaluationTab extends ConsumerWidget {
           }),
         ],
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () =>
+          const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
     );
   }
 
-  Color _scoreColor(double s) {
-    if (s >= 24) return AppColors.gradeHigh;
-    if (s >= 18) return AppColors.gradeMid;
+  Color _scoreColor(double score, double max) {
+    if (max == 0) return Colors.grey;
+    final ratio = score / max;
+    if (ratio >= 0.8) return AppColors.gradeHigh;
+    if (ratio >= 0.6) return AppColors.gradeMid;
     return AppColors.gradeLow;
   }
 
-  void _evalDialog(BuildContext context, WidgetRef ref, StudentModel student,
-      EvaluationModel existing) {
+  void _evalDialog(BuildContext context, WidgetRef ref,
+      StudentModel student, EvaluationModel existing) {
     final templateCriteria = partial.evaluationCriteria.isEmpty
         ? [
             {'name': 'Criterio 1'},
@@ -1502,10 +1787,19 @@ class _EvaluationTab extends ConsumerWidget {
           ]
         : partial.evaluationCriteria;
 
-    // Estado inicial de checks
+    // ── Declarar TODOS los controllers ANTES del StatefulBuilder ──────
     final extraCtrl = TextEditingController(
-  text: existing.extraPoints.toStringAsFixed(1),
-);
+      text: existing.extraPoints.toStringAsFixed(1),
+    );
+
+    // Controllers para componentes custom
+    final Map<String, TextEditingController> customControllers = {
+      for (final c in partial.activeComponents.where((c) => c.type == 'custom'))
+        c.id: TextEditingController(
+          text: (existing.customValues[c.id] ?? 0).toStringAsFixed(1),
+        )
+    };
+
     List<bool> checks = templateCriteria.map((c) {
       final name = c['name'] as String;
       final found = existing.criteria.where((ec) => ec.name == name);
@@ -1522,16 +1816,18 @@ class _EvaluationTab extends ConsumerWidget {
               : (completedCount / templateCriteria.length) * 30;
 
           return AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Evaluación Final',
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary)),
                 Text(student.fullName,
-                    style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                    style: const TextStyle(
+                        fontSize: 13, color: Colors.grey)),
               ],
             ),
             content: SingleChildScrollView(
@@ -1547,13 +1843,14 @@ class _EvaluationTab extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'Marca los criterios cumplidos. $completedCount/${templateCriteria.length} = ${total.toStringAsFixed(1)}/30 pts',
+                      'Criterios: $completedCount/${templateCriteria.length} = ${total.toStringAsFixed(1)}/30 pts',
                       style: const TextStyle(
                           fontSize: 12, color: AppColors.primary),
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  // Lista de criterios como checkboxes
+
+                  // Checkboxes de criterios del examen
                   ...templateCriteria.asMap().entries.map((entry) {
                     final i = entry.key;
                     final c = entry.value;
@@ -1563,74 +1860,147 @@ class _EvaluationTab extends ConsumerWidget {
                       title: Text(c['name'] as String,
                           style: const TextStyle(fontSize: 14)),
                       dense: true,
-                      onChanged: (v) => setS(() => checks[i] = v ?? false),
+                      onChanged: (v) =>
+                          setS(() => checks[i] = v ?? false),
                     );
                   }),
+
+                  // ── Componentes custom (si los hay) ──────────
+                  if (customControllers.isNotEmpty) ...[
+                    const Divider(),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4),
+                      child: Text('Evaluación manual',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontSize: 13)),
+                    ),
+                    ...partial.activeComponents
+                        .where((c) => c.type == 'custom')
+                        .map((c) {
+                      final ctrl = customControllers[c.id]!;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          children: [
+                            Icon(_componentIcon(c.type),
+                                color: _componentColor(c.type),
+                                size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(c.name,
+                                      style: const TextStyle(
+                                          fontWeight:
+                                              FontWeight.w600)),
+                                  Text(
+                                      'Vale ${c.maxPoints.toStringAsFixed(0)} pts',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey)),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: 70,
+                              child: TextField(
+                                controller: ctrl,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                textAlign: TextAlign.center,
+                                decoration: InputDecoration(
+                                  labelText: '/ 10',
+                                  isDense: true,
+                                  border: const OutlineInputBorder(),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: _componentColor(c.type),
+                                        width: 2),
+                                  ),
+                                ),
+                                onChanged: (_) => setS(() {}),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+
                   const Divider(),
 
-// ── Puntos extra ──────────────────────────────────────
-Padding(
-  padding: const EdgeInsets.symmetric(vertical: 4),
-  child: Row(
-    children: [
-      const Icon(Icons.star, color: Colors.amber, size: 20),
-      const SizedBox(width: 8),
-      const Text('Pts extra:',
-          style: TextStyle(fontWeight: FontWeight.bold)),
-      const Spacer(),
-      IconButton(
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(),
-        icon: const Icon(Icons.remove_circle_outline,
-            color: AppColors.error, size: 22),
-        onPressed: () {
-          final current =
-              double.tryParse(extraCtrl.text) ?? 0;
-          final next = (current - 0.5).clamp(0.0, 1.0);
-          setS(() => extraCtrl.text =
-              next.toStringAsFixed(1));
-        },
-      ),
-      const SizedBox(width: 4),
-      SizedBox(
-        width: 55,
-        child: TextField(
-          controller: extraCtrl,
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
-          textAlign: TextAlign.center,
-          decoration: const InputDecoration(
-            isDense: true,
-            border: OutlineInputBorder(),
-            contentPadding:
-                EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          ),
-          onChanged: (_) => setS(() {}),
-        ),
-      ),
-      const SizedBox(width: 4),
-      IconButton(
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(),
-        icon: const Icon(Icons.add_circle_outline,
-            color: AppColors.present, size: 22),
-        onPressed: () {
-          final current =
-              double.tryParse(extraCtrl.text) ?? 0;
-          final next = (current + 0.5).clamp(0.0, 1.0);
-          setS(() => extraCtrl.text =
-              next.toStringAsFixed(1));
-        },
-      ),
-      const SizedBox(width: 4),
-      const Text('/ 1 pt máx.',
-          style: TextStyle(fontSize: 11, color: Colors.grey)),
-    ],
-  ),
-),
+                  // ── Puntos extra ──────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.star,
+                            color: Colors.amber, size: 20),
+                        const SizedBox(width: 8),
+                        const Text('Pts extra:',
+                            style:
+                                TextStyle(fontWeight: FontWeight.bold)),
+                        const Spacer(),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.remove_circle_outline,
+                              color: AppColors.error, size: 22),
+                          onPressed: () {
+                            final current =
+                                double.tryParse(extraCtrl.text) ?? 0;
+                            final next = (current - 0.5).clamp(0.0, 1.0);
+                            setS(() => extraCtrl.text =
+                                next.toStringAsFixed(1));
+                          },
+                        ),
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          width: 55,
+                          child: TextField(
+                            controller: extraCtrl,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                                    decimal: true),
+                            textAlign: TextAlign.center,
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 4),
+                            ),
+                            onChanged: (_) => setS(() {}),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.add_circle_outline,
+                              color: AppColors.present, size: 22),
+                          onPressed: () {
+                            final current =
+                                double.tryParse(extraCtrl.text) ?? 0;
+                            final next = (current + 0.5).clamp(0.0, 1.0);
+                            setS(() => extraCtrl.text =
+                                next.toStringAsFixed(1));
+                          },
+                        ),
+                        const SizedBox(width: 4),
+                        const Text('/ 1 pt máx.',
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
 
-// Total
-Container(
+                  // Total visual
+                  Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.08),
@@ -1639,7 +2009,7 @@ Container(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Puntos obtenidos:',
+                        const Text('Puntos examen:',
                             style: TextStyle(fontWeight: FontWeight.bold)),
                         Text(
                           '${total.toStringAsFixed(1)} / 30 pts',
@@ -1658,7 +2028,8 @@ Container(
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () =>
+                    Navigator.of(ctx, rootNavigator: true).pop(),
                 child: const Text('Cancelar'),
               ),
               ElevatedButton(
@@ -1678,23 +2049,33 @@ Container(
                           ))
                       .toList();
 
-                  final extra = double.tryParse(extraCtrl.text) ?? 0;
+                  final extra =
+                      double.tryParse(extraCtrl.text) ?? 0;
 
-await ref
-    .read(evaluationRepositoryProvider)!
-    .saveEvaluation(
-      groupId,
-      EvaluationModel(
-        id: existing.id,
-        groupId: groupId,
-        studentId: student.id,
-        partialName: partial.name,
-        criteria: criteriaToSave,
-        extraPoints: extra.clamp(0.0, 1.0),
-        recordedAt: DateTime.now(),
-      ),
-    );
-                  if (ctx.mounted) Navigator.of(ctx, rootNavigator: true).pop();
+                  // Recopilar valores custom
+                  final customValues = {
+                    for (final entry in customControllers.entries)
+                      entry.key: (double.tryParse(entry.value.text) ?? 0)
+                          .clamp(0.0, 10.0),
+                  };
+
+                  await ref
+                      .read(evaluationRepositoryProvider)!
+                      .saveEvaluation(
+                        groupId,
+                        EvaluationModel(
+                          id: existing.id,
+                          groupId: groupId,
+                          studentId: student.id,
+                          partialName: partial.name,
+                          criteria: criteriaToSave,
+                          extraPoints: extra.clamp(0.0, 1.0),
+                          customValues: customValues,
+                          recordedAt: DateTime.now(),
+                        ),
+                      );
+                  if (ctx.mounted)
+                    Navigator.of(ctx, rootNavigator: true).pop();
                 },
                 child: const Text('Guardar'),
               ),
@@ -1713,7 +2094,7 @@ class _SummaryTab extends ConsumerWidget {
   final String groupId;
   final PartialModel partial;
   final List<StudentModel> students;
-  final Map<String, int> attendanceOverrides; // ← nuevo
+  final Map<String, int> attendanceOverrides;
 
   const _SummaryTab({
     required this.groupId,
@@ -1722,7 +2103,6 @@ class _SummaryTab extends ConsumerWidget {
     required this.attendanceOverrides,
   });
 
-  // Misma key que usa _AttendanceSummaryTab
   String _overrideKey(String studentId) =>
       '${groupId}_${partial.id}_$studentId';
 
@@ -1758,7 +2138,6 @@ class _SummaryTab extends ConsumerWidget {
                   _formulaCard(),
                   const SizedBox(height: 12),
                   ...students.map((student) {
-                    // ── Asistencia: usar override si existe ──────────
                     final rawCount = attendance
                         .where((a) =>
                             a.studentId == student.id &&
@@ -1768,18 +2147,16 @@ class _SummaryTab extends ConsumerWidget {
 
                     final key = _overrideKey(student.id);
                     final attCount = attendanceOverrides.containsKey(key)
-                        ? attendanceOverrides[key]!.clamp(
-                            0, partial.totalClassDays)
+                        ? attendanceOverrides[key]!
+                            .clamp(0, partial.totalClassDays)
                         : rawCount.clamp(0, partial.totalClassDays);
 
-                    // ── Actividades ───────────────────────────────────
                     final actCount = activities
                         .where((a) =>
                             a.studentId == student.id &&
                             (a.completed || a.reponed))
                         .length;
 
-                    // ── Evaluación ────────────────────────────────────
                     final eval = evals.firstWhere(
                       (e) => e.studentId == student.id,
                       orElse: () => EvaluationModel(
@@ -1793,23 +2170,19 @@ class _SummaryTab extends ConsumerWidget {
                     );
 
                     final result = GradeCalculator.calculate(
+                      components: partial.activeComponents,
                       studentAttendance: attCount,
                       totalClassDays: partial.totalClassDays,
                       studentActivities: actCount,
                       totalActivities: actTitles.length,
                       evaluationPoints: eval.totalPoints,
-                      extraPoints: eval.extraPoints, // ← NUEVO
+                      customValues: eval.customValues,
+                      extraPoints: eval.extraPoints,
                     );
 
-                    // Indicar si se usó override
-                    final usedOverride =
-                        attendanceOverrides.containsKey(key);
-
-                    return _summaryCard(
-                        student, result, attCount, actCount,
-                        eval.totalPoints, usedOverride);
+                    final usedOverride = attendanceOverrides.containsKey(key);
+                    return _summaryCard(student, result, usedOverride);
                   }),
-                  // Nota informativa
                   Container(
                     margin: const EdgeInsets.only(top: 8),
                     padding: const EdgeInsets.all(12),
@@ -1826,7 +2199,7 @@ class _SummaryTab extends ConsumerWidget {
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'El promedio final del cuatrimestre se calcula al exportar el reporte de calificaciones.',
+                            'El promedio final del cuatrimestre se calcula al exportar el reporte.',
                             style: TextStyle(
                                 fontSize: 12, color: Colors.black87),
                           ),
@@ -1850,6 +2223,7 @@ class _SummaryTab extends ConsumerWidget {
   }
 
   Widget _formulaCard() {
+    final components = partial.activeComponents;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -1866,44 +2240,24 @@ class _SummaryTab extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                   fontSize: 15)),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _formulaItem(
-                  'Asistencia', '10%', Icons.check_circle_outline),
-              _formulaItem(
-                  'Actividades', '60%', Icons.assignment_outlined),
-              _formulaItem('Evaluación', '30%', Icons.star_outline),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: Colors.amber.withOpacity(0.4)),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
+          Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            spacing: 12,
+            runSpacing: 8,
+            children: components.map((c) {
+              return Column(
                 children: [
-                  Icon(Icons.star,
-                      color: Colors.amber, size: 14),
-                  SizedBox(width: 4),
-                  Text(
-                    'Hasta 5 pts extra',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.amber,
-                        fontWeight: FontWeight.bold),
-                  ),
+                  Text(c.weightLabel,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18)),
+                  Text(c.name,
+                      style: const TextStyle(
+                          color: Colors.white60, fontSize: 11)),
                 ],
-              ),
-            ),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 8),
           const Text('≥ 60 pts = ACREDITADO',
@@ -1916,31 +2270,8 @@ class _SummaryTab extends ConsumerWidget {
     );
   }
 
-  Widget _formulaItem(String label, String pct, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white70, size: 20),
-        const SizedBox(height: 4),
-        Text(pct,
-            style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18)),
-        Text(label,
-            style:
-                const TextStyle(color: Colors.white60, fontSize: 11)),
-      ],
-    );
-  }
-
   Widget _summaryCard(
-    StudentModel student,
-    GradeResult result,
-    int attCount,
-    int actCount,
-    double evalPts,
-    bool usedOverride,
-  ) {
+      StudentModel student, GradeResult result, bool usedOverride) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -1982,14 +2313,11 @@ class _SummaryTab extends ConsumerWidget {
                   children: [
                     Text(student.fullName,
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14)),
-                    // Indicador de override
+                            fontWeight: FontWeight.bold, fontSize: 14)),
                     if (usedOverride)
-                      const Text('✏️ Asistencia editada manualmente',
+                      const Text('✏️ Asistencia editada',
                           style: TextStyle(
-                              fontSize: 10,
-                              color: AppColors.secondary)),
+                              fontSize: 10, color: AppColors.secondary)),
                   ],
                 ),
               ),
@@ -2013,15 +2341,20 @@ class _SummaryTab extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              _scoreItem('Asistencia',
-                  result.attendanceScore.toStringAsFixed(1), '/10'),
-              _scoreItem('Actividades',
-                  result.activitiesScore.toStringAsFixed(1), '/60'),
-              _scoreItem('Evaluación',
-                  result.evaluationScore.toStringAsFixed(1), '/30'),
+              ...result.components.map((c) {
+                final score = result.componentScores[c.id] ?? 0;
+                final max = c.maxPoints;
+                return _scoreItem(
+                  c.name,
+                  score.toStringAsFixed(1),
+                  '/${max.toStringAsFixed(0)}',
+                );
+              }),
               _scoreItem(
                 'TOTAL',
                 result.total.toStringAsFixed(1),
@@ -2033,38 +2366,37 @@ class _SummaryTab extends ConsumerWidget {
               ),
             ],
           ),
-          // Después del Row de _scoreItem(...)
-if (result.extraPoints > 0) ...[
-  const SizedBox(height: 6),
-  Align(
-    alignment: Alignment.centerRight,
-    child: Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: Colors.amber.withOpacity(0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.star,
-              color: Colors.amber, size: 14),
-          const SizedBox(width: 4),
-          Text(
-            '+${(result.extraPoints / 10).toStringAsFixed(1)} pt extra (${result.extraPoints.toStringAsFixed(0)} en calificación)',
-            style: const TextStyle(
-                fontSize: 12,
-                color: Colors.amber,
-                fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    ),
-  ),
-],
+          if (result.extraPoints > 0) ...[
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: Colors.amber.withOpacity(0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star,
+                        color: Colors.amber, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '+${(result.extraPoints / 10).toStringAsFixed(1)} pt extra',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.amber,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -2086,8 +2418,7 @@ if (result.extraPoints > 0) ...[
               ),
               TextSpan(
                 text: max,
-                style:
-                    TextStyle(fontSize: 11, color: Colors.grey[400]),
+                style: TextStyle(fontSize: 11, color: Colors.grey[400]),
               ),
             ],
           ),
@@ -2096,9 +2427,8 @@ if (result.extraPoints > 0) ...[
             style: TextStyle(
                 fontSize: 10,
                 color: Colors.grey[600],
-                fontWeight: isTotal
-                    ? FontWeight.bold
-                    : FontWeight.normal)),
+                fontWeight:
+                    isTotal ? FontWeight.bold : FontWeight.normal)),
       ],
     );
   }

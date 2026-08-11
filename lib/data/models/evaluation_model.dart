@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Criterio = solo nombre, sin puntos individuales
 class EvaluationCriterion {
   final String name;
-  final bool completed; // ← checklist
+  final bool completed;
 
   const EvaluationCriterion({
     required this.name,
@@ -22,7 +21,8 @@ class EvaluationCriterion {
       );
 
   EvaluationCriterion copyWith({bool? completed}) =>
-      EvaluationCriterion(name: name, completed: completed ?? this.completed);
+      EvaluationCriterion(
+          name: name, completed: completed ?? this.completed);
 }
 
 class EvaluationModel {
@@ -32,6 +32,8 @@ class EvaluationModel {
   final String partialName;
   final List<EvaluationCriterion> criteria;
   final double extraPoints;
+  // Valores para componentes custom: componentId → valor (0-10)
+  final Map<String, double> customValues; // ← NUEVO
   final String? notes;
   final DateTime recordedAt;
 
@@ -42,20 +44,16 @@ class EvaluationModel {
     required this.partialName,
     required this.criteria,
     this.extraPoints = 0,
+    this.customValues = const {}, // ← NUEVO
     this.notes,
     required this.recordedAt,
   });
 
-    // Regla de 3: criteriosCompletos/totalCriterios * 30
   double get totalPoints {
     if (criteria.isEmpty) return 0;
     final completed = criteria.where((c) => c.completed).length;
     return (completed / criteria.length) * 30;
   }
-
-  // Total incluyendo puntos extra (con tope configurable)
-  double totalWithExtra({double maxExtra = 5.0}) =>
-      totalPoints + extraPoints.clamp(0, maxExtra);
 
   int get completedCount => criteria.where((c) => c.completed).length;
   int get totalCount => criteria.length;
@@ -71,7 +69,12 @@ class EvaluationModel {
             .map((c) => EvaluationCriterion.fromMap(
                 c as Map<String, dynamic>))
             .toList(),
-        extraPoints: (d['extraPoints'] as num?)?.toDouble() ?? 0,
+        extraPoints:
+            (d['extraPoints'] as num?)?.toDouble() ?? 0,
+        customValues: Map<String, double>.from(
+          (d['customValues'] as Map<String, dynamic>? ?? {})
+              .map((k, v) => MapEntry(k, (v as num).toDouble())),
+        ),
         notes: d['notes'],
         recordedAt: (d['recordedAt'] as Timestamp).toDate(),
       );
@@ -82,6 +85,7 @@ class EvaluationModel {
         'partialName': partialName,
         'criteria': criteria.map((c) => c.toMap()).toList(),
         'extraPoints': extraPoints,
+        'customValues': customValues,
         'notes': notes,
         'recordedAt': Timestamp.fromDate(recordedAt),
       };
