@@ -14,7 +14,6 @@ import '../../../data/models/evaluation_model.dart';
 import '../../../domain/services/grade_calculator.dart';
 import '../../providers/partials_provider.dart';
 import '../../../core/utils/back_handler.dart';
-
 class ExportScreen extends ConsumerStatefulWidget {
   const ExportScreen({super.key});
 
@@ -689,12 +688,14 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             );
 
             final result = GradeCalculator.calculate(
+              components: partial.activeComponents,
               studentAttendance: attCount,
               totalClassDays: partial.totalClassDays,
               studentActivities: actCount,
               totalActivities: actTitles.length,
               evaluationPoints: eval.totalPoints,
-              components: [],
+              customValues: eval.customValues,
+              extraPoints: eval.extraPoints,
             );
 
             summaryData.add({
@@ -787,12 +788,14 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           );
 
           final result = GradeCalculator.calculate(
+            components: partial.activeComponents,
             studentAttendance: attCount,
             totalClassDays: partial.totalClassDays,
             studentActivities: actCount,
             totalActivities: actTitles.length,
             evaluationPoints: eval.totalPoints,
-            components: [],
+            customValues: eval.customValues,
+            extraPoints: eval.extraPoints,
           );
 
           summaryData.add({
